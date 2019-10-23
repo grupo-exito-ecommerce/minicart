@@ -1,13 +1,5 @@
 import classNames from 'classnames'
-import {
-  map,
-  partition,
-  path,
-  pathOr,
-  pick,
-  isNil,
-  prop,
-} from 'ramda'
+import { map, partition, path, pathOr, pick, isNil, prop } from 'ramda'
 import React, {
   useState,
   useEffect,
@@ -26,21 +18,21 @@ import { addToCart, updateItems } from 'vtex.store-resources/Mutations'
 import { usePixel } from 'vtex.pixel-manager/PixelContext'
 import ProductPrice from 'vtex.store-components/ProductPrice'
 
-import MiniCartContent from './components/MiniCartContent'
-import Sidebar from './components/Sidebar'
-import Popup from './components/Popup'
-import { shouldShowItem } from './utils/itemsHelper'
-import { mapBuyButtonItemToPixel } from './utils/pixelHelper'
+import MiniCartContent from './legacy/components/MiniCartContent'
+import Sidebar from './legacy/components/Sidebar'
+import Popup from './legacy/components/Popup'
+import { shouldShowItem } from './legacy/utils/itemsHelper'
+import { mapBuyButtonItemToPixel } from './legacy/utils/pixelHelper'
 
-import fullMinicartQuery from './localState/graphql/fullMinicartQuery.gql'
-import updateItemsMutation from './localState/graphql/updateItemsMutation.gql'
-import updateOrderFormMutation from './localState/graphql/updateOrderFormMutation.gql'
-import updateLocalItemStatusMutation from './localState/graphql/updateLocalItemStatusMutation.gql'
-import setMinicartOpenMutation from './localState/graphql/setMinicartOpenMutation.gql'
+import fullMinicartQuery from './legacy/localState/graphql/fullMinicartQuery.gql'
+import updateItemsMutation from './legacy/localState/graphql/updateItemsMutation.gql'
+import updateOrderFormMutation from './legacy/localState/graphql/updateOrderFormMutation.gql'
+import updateLocalItemStatusMutation from './legacy/localState/graphql/updateLocalItemStatusMutation.gql'
+import setMinicartOpenMutation from './legacy/localState/graphql/setMinicartOpenMutation.gql'
 
-import createLocalState, { ITEMS_STATUS } from './localState'
+import createLocalState, { ITEMS_STATUS } from './legacy/localState'
 
-import styles from './minicart.css'
+import styles from './legacy/minicart.css'
 
 const DEFAULT_LABEL_CLASSES = ''
 const DEFAULT_ICON_CLASSES = 'gray'
@@ -109,8 +101,12 @@ const useUpdateOrderFormOnState = (data, minicartState, updateOrderForm) => {
         const remoteOrderForm = data.orderForm
 
         if (remoteOrderForm || !orderFormData) {
-          const forceRemoteOrderform = !hasSavedRemoteOrderFormRef.current && remoteOrderForm
-          if (forceRemoteOrderform || (!path(['orderForm'], minicartState) && remoteOrderForm)) {
+          const forceRemoteOrderform =
+            !hasSavedRemoteOrderFormRef.current && remoteOrderForm
+          if (
+            forceRemoteOrderform ||
+            (!path(['orderForm'], minicartState) && remoteOrderForm)
+          ) {
             hasSavedRemoteOrderFormRef.current = true
             await updateOrderForm(remoteOrderForm)
           }
@@ -289,7 +285,7 @@ const MiniCart = ({
           if (itemsToAdd.length > 0) {
             push({
               event: 'addToCart',
-              items: itemsToAdd.map(mapBuyButtonItemToPixel)
+              items: itemsToAdd.map(mapBuyButtonItemToPixel),
             })
           }
 
@@ -337,7 +333,15 @@ const MiniCart = ({
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [intl, isOffline, showToast, addItems, mutateUpdateItems, modifiedItems, push]
+    [
+      intl,
+      isOffline,
+      showToast,
+      addItems,
+      mutateUpdateItems,
+      modifiedItems,
+      push,
+    ]
   )
 
   const handleClickButton = event => {
@@ -395,7 +399,7 @@ const MiniCart = ({
       updatingOrderForm={isUpdatingOrderForm}
     />
   )
-  
+
   const priceClasses = classNames(
     `${styles.label} dn-m db-l t-action--small ${labelClasses}`,
     {
@@ -406,7 +410,9 @@ const MiniCart = ({
 
   const isPriceVisible = showPrice && orderForm && orderForm.value > 0
   const iconLabelClasses = classNames(
-    `${styles.label} dn-m db-l ${ isPriceVisible ? 't-mini' : 't-action--small'} ${labelClasses}`,
+    `${styles.label} dn-m db-l ${
+      isPriceVisible ? 't-mini' : 't-action--small'
+    } ${labelClasses}`,
     {
       pl6: quantity > 0,
       pl4: quantity <= 0,
@@ -431,22 +437,26 @@ const MiniCart = ({
             </span>
           }
           variation="tertiary"
-          onClick={handleClickButton}>
+          onClick={handleClickButton}
+        >
           {(iconLabel || isPriceVisible) && (
             <span className="flex items-center">
-                <span className="flex flex-column items-start">
-                  {iconLabel && <span className={iconLabelClasses}>{iconLabel}</span>}
-                  {isPriceVisible && (
-                    <span data-testid="total-price" className={priceClasses}>
-                      <div>
-                        <ProductPrice 
-                        showLabels={false} 
-                        showListPrice={false} 
-                        sellingPrice={orderForm.value} />
-                      </div>
-                    </span>
-                  )}
-                </span>
+              <span className="flex flex-column items-start">
+                {iconLabel && (
+                  <span className={iconLabelClasses}>{iconLabel}</span>
+                )}
+                {isPriceVisible && (
+                  <span data-testid="total-price" className={priceClasses}>
+                    <div>
+                      <ProductPrice
+                        showLabels={false}
+                        showListPrice={false}
+                        sellingPrice={orderForm.value}
+                      />
+                    </div>
+                  </span>
+                )}
+              </span>
             </span>
           )}
         </ButtonWithIcon>
